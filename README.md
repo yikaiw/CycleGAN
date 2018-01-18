@@ -32,5 +32,3 @@ See training details and images in TensorBoard:
 ```
 tensorboard --logdir checkpoints/${datetime}
 ```
-
-# CycleGAN
