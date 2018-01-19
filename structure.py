@@ -1,9 +1,11 @@
 import tensorflow as tf
 import layers
-import utils
 from reader import Reader
 
 REAL_LABEL = 0.9
+
+def batch_convert2int(images):
+    return tf.map_fn(convert2int, images, dtype=tf.uint8)
 
 class Generator:
     def __init__(self, name, is_training, ngf=64, norm='instance', image_size=128):
@@ -42,7 +44,7 @@ class Generator:
         return output
     
     def sample(self, input):
-        image = utils.batch_convert2int(self.__call__(input))
+        image = batch_convert2int(self.__call__(input))
         image = tf.image.encode_jpeg(tf.squeeze(image, [0]))
         return image
 
@@ -131,10 +133,10 @@ class CycleGAN:
         tf.summary.scalar('loss/D_X', D_X_loss)
         tf.summary.scalar('loss/cycle', cycle_loss)
         
-        tf.summary.image('X/generated', utils.batch_convert2int(self.G(x)))
-        tf.summary.image('X/reconstruction', utils.batch_convert2int(self.F(self.G(x))))
-        tf.summary.image('Y/generated', utils.batch_convert2int(self.F(y)))
-        tf.summary.image('Y/reconstruction', utils.batch_convert2int(self.G(self.F(y))))
+        tf.summary.image('X/generated', batch_convert2int(self.G(x)))
+        tf.summary.image('X/reconstruction', batch_convert2int(self.F(self.G(x))))
+        tf.summary.image('Y/generated', batch_convert2int(self.F(y)))
+        tf.summary.image('Y/reconstruction', batch_convert2int(self.G(self.F(y))))
         
         return G_loss, D_Y_loss, F_loss, D_X_loss, fake_y, fake_x
     

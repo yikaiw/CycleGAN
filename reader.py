@@ -1,5 +1,4 @@
 import tensorflow as tf
-import utils
 
 class Reader():
     def __init__(self, tfrecords_file, image_size=256,
@@ -47,13 +46,16 @@ class Reader():
             
             tf.summary.image('_input', images)
         return images
+
+    def convert2float(image):
+        image = tf.image.convert_image_dtype(image, dtype=tf.float32)
+        return (image / 127.5) - 1.0
     
     def _preprocess(self, image):
         image = tf.image.resize_images(image, size=(self.image_size, self.image_size))
-        image = utils.convert2float(image)
+        image = convert2float(image)
         image.set_shape([self.image_size, self.image_size, 3])
         return image
-
 
 def test_reader():
     TRAIN_FILE_1 = 'data/tfrecords/apple.tfrecords'

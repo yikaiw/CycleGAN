@@ -1,6 +1,5 @@
 import tensorflow as tf
 from structure import CycleGAN
-from utils import ImagePool
 from datetime import datetime
 import os
 
@@ -20,7 +19,29 @@ Y = 'data/tfrecords/ukiyoe.tfrecords'  # Y tfrecords file for training
 FLAGS = tf.flags.FLAGS
 tf.flags.DEFINE_string('pre_trained', None, 'for continue training(e.g. 20180117-1030)')
 
-def train():
+class ImagePool:
+    def __init__(self, pool_size):
+        self.pool_size = pool_size
+        self.images = []
+    
+    def query(self, image):
+        if self.pool_size == 0:
+            return image
+        
+        if len(self.images) < self.pool_size:
+            self.images.append(image)
+            return image
+        else:
+            p = random.random()
+            if p > 0.5:
+                random_id = random.randrange(0, self.pool_size)
+                tmp = self.images[random_id].copy()
+                self.images[random_id] = image.copy()
+                return tmp
+            else:
+                return image
+
+def main():
     if FLAGS.pre_trained is not None:
         checkpoints_dir = "checkpoints/" + FLAGS.pre_trained.lstrip("checkpoints/")
     else:
@@ -61,13 +82,10 @@ def train():
             fake_X_pool = ImagePool(pool_size)
             
             while not coord.should_stop():
-                # get previously generated images
                 fake_y_val, fake_x_val = sess.run([fake_y, fake_x])
                 
-                # train
                 _, G_loss_val, D_Y_loss_val, F_loss_val, D_X_loss_val, summary = (
-                    sess.run(
-                        [optimizers, G_loss, D_Y_loss, F_loss, D_X_loss, summary_op],
+                    sess.run([optimizers, G_loss, D_Y_loss, F_loss, D_X_loss, summary_op],
                         feed_dict={cycle_gan.fake_y: fake_Y_pool.query(fake_y_val),
                                    cycle_gan.fake_x: fake_X_pool.query(fake_x_val)}
                     )
@@ -85,7 +103,6 @@ def train():
                 
                 if step % 10000 == 0:
                     save_path = saver.save(sess, checkpoints_dir + "/model.ckpt", global_step=step)
-                    print("Model saved in file: %s" % save_path)
                 
                 step += 1
         
@@ -102,4 +119,4 @@ def train():
 
 
 if __name__ == '__main__':
-    train()
+    main()
