@@ -56,8 +56,8 @@ def main():
     graph = tf.Graph()
     with graph.as_default():
         cycle_gan = CycleGAN(X, Y, batch_size, image_size, use_lsgan, norm, lambda1, lambda2, learning_rate, beta1, ngf)
-        G_loss, D_Y_loss, F_loss, D_X_loss, fake_y, fake_x = cycle_gan.model()
-        optimizers = cycle_gan.optimize(G_loss, D_Y_loss, F_loss, D_X_loss)
+        G_loss, DY_loss, F_loss, DX_loss, fake_y, fake_x = cycle_gan.model()
+        optimizers = cycle_gan.optimize(G_loss, DY_loss, F_loss, DX_loss)
         
         summary_op = tf.summary.merge_all()
         train_writer = tf.summary.FileWriter(checkpoints_dir, graph)
@@ -84,8 +84,8 @@ def main():
             while not coord.should_stop():
                 fake_y_val, fake_x_val = sess.run([fake_y, fake_x])
                 
-                _, G_loss_val, D_Y_loss_val, F_loss_val, D_X_loss_val, summary = (
-                    sess.run([optimizers, G_loss, D_Y_loss, F_loss, D_X_loss, summary_op],
+                _, G_loss_val, DY_loss_val, F_loss_val, DX_loss_val, summary = (
+                    sess.run([optimizers, G_loss, DY_loss, F_loss, DX_loss, summary_op],
                         feed_dict={cycle_gan.fake_y: fake_Y_pool.query(fake_y_val),
                                    cycle_gan.fake_x: fake_X_pool.query(fake_x_val)}
                     )
@@ -95,11 +95,11 @@ def main():
                 train_writer.flush()
                 
                 if step % 100 == 0:
-                    print('-----------Step %d:-------------' % step)
+                    print('Step %d:' % step)
                     print('  G_loss   : {}'.format(G_loss_val))
-                    print('  D_Y_loss : {}'.format(D_Y_loss_val))
+                    print('  DY_loss : {}'.format(DY_loss_val))
                     print('  F_loss   : {}'.format(F_loss_val))
-                    print('  D_X_loss : {}'.format(D_X_loss_val))
+                    print('  DX_loss : {}'.format(DX_loss_val))
                 
                 if step % 10000 == 0:
                     save_path = saver.save(sess, checkpoints_dir + "/model.ckpt", global_step=step)

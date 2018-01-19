@@ -18,7 +18,7 @@ python build_data.py
 ```
 
 ## Training
-Quick Train:
+Quick train:
 ```
 python main.py
 ```

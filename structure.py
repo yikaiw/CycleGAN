@@ -72,8 +72,7 @@ class Discriminator:
             C512 = layers.Ck(C256, 512, reuse=self.reuse, norm=self.norm,
                           is_training=self.is_training, name='C512')  # (?, w/16, h/16, 512)
             
-            output = layers.last_conv(C512, reuse=self.reuse,
-                                   use_sigmoid=self.use_sigmoid, name='output')  # (?, w/16, h/16, 1)
+            output = layers.last_conv(C512, reuse=self.reuse, use_sigmoid=self.use_sigmoid, name='output')  # (?, w/16, h/16, 1)
         
         self.reuse = True
         self.variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=self.name)
@@ -98,9 +97,9 @@ class CycleGAN:
         self.is_training = tf.placeholder_with_default(True, shape=[], name='is_training')
         
         self.G = Generator('G', self.is_training, ngf=ngf, norm=norm, image_size=image_size)
-        self.D_Y = Discriminator('D_Y', self.is_training, norm=norm, use_sigmoid=use_sigmoid)
+        self.DY = Discriminator('DY', self.is_training, norm=norm, use_sigmoid=use_sigmoid)
         self.F = Generator('F', self.is_training, norm=norm, image_size=image_size)
-        self.D_X = Discriminator('D_X', self.is_training, norm=norm, use_sigmoid=use_sigmoid)
+        self.DX = Discriminator('DX', self.is_training, norm=norm, use_sigmoid=use_sigmoid)
         self.fake_x = tf.placeholder(tf.float32, shape=[batch_size, image_size, image_size, 3])
         self.fake_y = tf.placeholder(tf.float32, shape=[batch_size, image_size, image_size, 3])
     
@@ -115,26 +114,26 @@ class CycleGAN:
         
         # X -> Y
         fake_y = self.G(x)
-        G_gan_loss = self.generator_loss(self.D_Y, fake_y, use_lsgan=self.use_lsgan)
+        G_gan_loss = self.generator_loss(self.DY, fake_y, use_lsgan=self.use_lsgan)
         G_loss = G_gan_loss + cycle_loss
-        D_Y_loss = self.discriminator_loss(self.D_Y, y, self.fake_y, use_lsgan=self.use_lsgan)
+        DY_loss = self.discriminator_loss(self.DY, y, self.fake_y, use_lsgan=self.use_lsgan)
         
         # Y -> X
         fake_x = self.F(y)
-        F_gan_loss = self.generator_loss(self.D_X, fake_x, use_lsgan=self.use_lsgan)
+        F_gan_loss = self.generator_loss(self.DX, fake_x, use_lsgan=self.use_lsgan)
         F_loss = F_gan_loss + cycle_loss
-        D_X_loss = self.discriminator_loss(self.D_X, x, self.fake_x, use_lsgan=self.use_lsgan)
+        DX_loss = self.discriminator_loss(self.DX, x, self.fake_x, use_lsgan=self.use_lsgan)
         
         # summary
-        tf.summary.histogram('D_Y/true', self.D_Y(y))
-        tf.summary.histogram('D_Y/fake', self.D_Y(self.G(x)))
-        tf.summary.histogram('D_X/true', self.D_X(x))
-        tf.summary.histogram('D_X/fake', self.D_X(self.F(y)))
+        tf.summary.histogram('DY/true', self.DY(y))
+        tf.summary.histogram('DY/fake', self.DY(self.G(x)))
+        tf.summary.histogram('DX/true', self.DX(x))
+        tf.summary.histogram('DX/fake', self.DX(self.F(y)))
         
         tf.summary.scalar('loss/G', G_gan_loss)
-        tf.summary.scalar('loss/D_Y', D_Y_loss)
+        tf.summary.scalar('loss/DY', DY_loss)
         tf.summary.scalar('loss/F', F_gan_loss)
-        tf.summary.scalar('loss/D_X', D_X_loss)
+        tf.summary.scalar('loss/DX', DX_loss)
         tf.summary.scalar('loss/cycle', cycle_loss)
         
         tf.summary.image('X/generated', batch_convert2int(self.G(x)))
@@ -142,9 +141,9 @@ class CycleGAN:
         tf.summary.image('Y/generated', batch_convert2int(self.F(y)))
         tf.summary.image('Y/reconstruction', batch_convert2int(self.G(self.F(y))))
         
-        return G_loss, D_Y_loss, F_loss, D_X_loss, fake_y, fake_x
+        return G_loss, DY_loss, F_loss, DX_loss, fake_y, fake_x
     
-    def optimize(self, G_loss, D_Y_loss, F_loss, D_X_loss):
+    def optimize(self, G_loss, DY_loss, F_loss, DX_loss):
         def make_optimizer(loss, variables, name='Adam'):
             global_step = tf.Variable(0, trainable=False)
             starter_learning_rate = self.learning_rate
@@ -170,11 +169,11 @@ class CycleGAN:
             return learning_step
         
         G_optimizer = make_optimizer(G_loss, self.G.variables, name='Adam_G')
-        D_Y_optimizer = make_optimizer(D_Y_loss, self.D_Y.variables, name='Adam_D_Y')
+        DY_optimizer = make_optimizer(DY_loss, self.DY.variables, name='Adam_DY')
         F_optimizer = make_optimizer(F_loss, self.F.variables, name='Adam_F')
-        D_X_optimizer = make_optimizer(D_X_loss, self.D_X.variables, name='Adam_D_X')
+        DX_optimizer = make_optimizer(DX_loss, self.DX.variables, name='Adam_DX')
         
-        with tf.control_dependencies([G_optimizer, D_Y_optimizer, F_optimizer, D_X_optimizer]):
+        with tf.control_dependencies([G_optimizer, DY_optimizer, F_optimizer, DX_optimizer]):
             return tf.no_op(name='optimizers')
     
     def discriminator_loss(self, D, y, fake_y, use_lsgan=True):
