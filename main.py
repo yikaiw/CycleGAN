@@ -17,7 +17,7 @@ X = 'data/tfrecords/photo.tfrecords'  # X tfrecords file for training
 Y = 'data/tfrecords/ukiyoe.tfrecords'  # Y tfrecords file for training
 
 FLAGS = tf.flags.FLAGS
-tf.flags.DEFINE_string('pre_trained', None, 'for continue training(e.g. 20180117-1030)')
+tf.flags.DEFINE_string('pre_trained', None, 'for continue training')
 
 class ImagePool:
     def __init__(self, pool_size):

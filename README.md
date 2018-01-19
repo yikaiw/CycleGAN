@@ -20,11 +20,11 @@ python build_data.py
 ## Training
 Quick Train:
 ```
-python train.py
+python main.py
 ```
 Or continue training from a pre-trained model:
 ```
-python train.py --pre_trained 20180117-1030
+python main.py --pre_trained 20180117-1030
 ```
 
 ## Results

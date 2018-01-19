@@ -18,6 +18,9 @@ class Generator:
     
     def __call__(self, input):
         with tf.variable_scope(self.name):
+            # The generator architecture is:
+            # The network with 6 blocks consists of: c7s1-32,d64,d128,R128,R128,R128,R128,R128,R128,u64,u32,c7s1-3
+            # The network with 9 blocks consists of: c7s1-32,d64,d128,R128,R128,R128,R128,R128,R128,R128,R128,R128,u64,u32,c7s1-3
             c7s1_32 = layers.c7s1_k(input, self.ngf, is_training=self.is_training, norm=self.norm,
                                  reuse=self.reuse, name='c7s1_32')  # (?, w, h, 32)
             d64 = layers.dk(c7s1_32, 2 * self.ngf, is_training=self.is_training, norm=self.norm,
@@ -59,6 +62,7 @@ class Discriminator:
     
     def __call__(self, input):
         with tf.variable_scope(self.name):
+            # The discriminator architecture is: C64-C128-C256-C512
             C64 = layers.Ck(input, 64, reuse=self.reuse, norm=None,
                          is_training=self.is_training, name='C64')  # (?, w/2, h/2, 64)
             C128 = layers.Ck(C64, 128, reuse=self.reuse, norm=self.norm,
