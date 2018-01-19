@@ -42,11 +42,12 @@ class ImagePool:
                 return image
 
 def main():
+    data_dir = "/media/wyk/DATA/Documents/git/"
     if FLAGS.pre_trained is not None:
-        checkpoints_dir = "checkpoints/" + FLAGS.pre_trained.lstrip("checkpoints/")
+        checkpoints_dir = data_dir + "checkpoints/" + FLAGS.pre_trained.lstrip("checkpoints/")
     else:
         current_time = datetime.now().strftime("%Y%m%d-%H%M")
-        checkpoints_dir = "checkpoints/{}".format(current_time)
+        checkpoints_dir = data_dir + "checkpoints/{}".format(current_time)
         try:
             os.makedirs(checkpoints_dir)
         except os.error:
