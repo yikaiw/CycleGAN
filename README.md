@@ -12,7 +12,8 @@ First, download a dataset:
 ```
 bash download_dataset.sh monet2photo
 ```
-Second, write the dataset to tfrecords:
+Second, modify the direction of dataset in main.py
+Third, write the dataset to tfrecords:
 ```
 python build_data.py
 ```
@@ -28,7 +29,7 @@ python main.py --pre_trained 20180117-1030
 ```
 
 ## Results
-See training details and images in TensorBoard:
+See training details and transfered images in TensorBoard:
 ```
 tensorboard --logdir checkpoints/${datetime}
 ```

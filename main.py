@@ -42,7 +42,7 @@ class ImagePool:
                 return image
 
 def main():
-    data_dir = "/media/wyk/DATA/Documents/git/"
+    data_dir = "/media/wyk/DATA/Documents/CycleGAN/"
     if FLAGS.pre_trained is not None:
         checkpoints_dir = data_dir + "checkpoints/" + FLAGS.pre_trained.lstrip("checkpoints/")
     else:
