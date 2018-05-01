@@ -1,5 +1,6 @@
 # CycleGAN
 Tensorflow implementation of CycleGAN.
+
 * [Original implementation](https://github.com/junyanz/CycleGAN/)
 * [Paper](https://arxiv.org/abs/1703.10593)
 
@@ -12,7 +13,9 @@ First, download a dataset:
 ```
 bash download_dataset.sh monet2photo
 ```
+
 Second, modify the direction of dataset in main.py
+
 Third, write the dataset to tfrecords:
 ```
 python build_data.py
